@@ -1,17 +1,14 @@
-const functions = require("firebase-functions");
 const express = require("express");
 const axios = require("axios");
 
 const app = express();
 app.use(express.json());
 
-const LINE_ACCESS_TOKEN =
-  "nv1uc5FBYa1YpBRpKeU5exnVnaa/gyY5pkVL+ZFDDs62rY" +
-  "lOcxMx2pKa8XJx5DCZtfWYI9mgetqMpvJFH9FKR3lVek4o" +
-  "9UUStZe0dkg8/17OGyFQKIfYbjtIYD0IyqF9wpkh0m1aaT" +
-  "pCp7PDRRzswAdB04t89/1O/w1cDnyilFU=";
+const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;  // 使用環境變數儲存 Token
 
 app.post("/webhook", async (req, res) => {
+  console.log("Webhook received!", req.body);  // Log 來確認有收到請求
+
   const events = req.body.events;
   if (!events || events.length === 0) {
     return res.status(200).send("No events");
@@ -44,14 +41,15 @@ async function replyToLine(replyToken, message) {
 
   const body = {
     replyToken: replyToken,
-    messages: [{type: "text", text: message}],
+    messages: [{ type: "text", text: message }],
   };
 
   try {
-    await axios.post(url, body, {headers});
+    await axios.post(url, body, { headers });
   } catch (error) {
     console.error("Error sending message:", error);
   }
 }
 
-exports.lineBot = functions.https.onRequest(app);
+// 🔹 這一行是 Vercel API 必須的
+module.exports = app;
