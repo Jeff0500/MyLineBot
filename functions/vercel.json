@@ -1,8 +1,5 @@
 {
-  "routes": [
-    {
-      "src": "/webhook",
-      "dest": "/api/webhook"
-    }
-  ]
+  "builds": [{ "src": "webhook.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/webhook", "dest": "webhook.js" }]
 }
+
