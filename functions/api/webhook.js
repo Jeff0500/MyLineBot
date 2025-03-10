@@ -98,4 +98,6 @@ async function replyToLine(replyToken, message) {
 }
 
 // 🔹 Vercel 部署時需要匯出 app
-module.exports = app;
+module.exports = (req, res) => {
+  app(req, res);
+};
