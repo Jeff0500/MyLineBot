@@ -1,4 +1,4 @@
-// 引入必要的模組
+// 🔹 載入必要的模組
 require("dotenv").config(); // 加載 .env 文件中的環境變數
 const express = require("express");
 const axios = require("axios");
@@ -6,11 +6,11 @@ const axios = require("axios");
 const app = express();
 app.use(express.json());
 
-// 讀取環境變數
+// 🔹 讀取環境變數
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY; // Gemini API Key
 const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN; // LINE Bot Token
 
-// Webhook 接收來自 LINE Bot 的訊息
+// 🔹 Webhook 接收來自 LINE Bot 的訊息
 app.post("/webhook", async (req, res) => {
   console.log("📩 Webhook received:", req.body); // 確認收到請求
 
@@ -24,10 +24,10 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken;
       const userMessage = event.message.text;
 
-      // 調用 Gemini API 來生成回應
+      // 🔥 調用 Gemini API 來生成回應
       const geminiReply = await getGeminiResponse(userMessage);
 
-      // 回傳來自 Gemini API 的回應
+      // 🔥 回傳來自 Gemini API 的回應
       await replyToLine(replyToken, geminiReply);
     }
   }
@@ -48,10 +48,11 @@ async function getGeminiResponse(message) {
   };
 
   const body = {
-    contents: [{ role: "user", parts: [{ text: message }] }],
-    generationConfig: {
-      maxOutputTokens: 150, // 限制回應長度，避免超過 LINE 訊息限制
-    },
+    contents: [
+      {
+        parts: [{ text: message }],
+      },
+    ],
   };
 
   try {
@@ -96,5 +97,5 @@ async function replyToLine(replyToken, message) {
   }
 }
 
-// Vercel 部署時需要匯出 app
+// 🔹 Vercel 部署時需要匯出 app
 module.exports = app;
