@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // LINE Messaging API Token（請填入你的 Channel Access Token）
-const LINE_ACCESS_TOKEN = '2o5DKqQeay7ci0b7WUBMkzHH0Hpg+NUoQ05f5E0ixTbNNFJWFYUmd4i+5ErRkJjrdm8tlOdSQCyG/FLVTrBnWWVFDMR6xwNl2w9a9CeQItoIIhW9H7+QfAiu/sylcPXxUqa2io+SQLcX8nxpeq2iCwdB04t89/1O/w1cDnyilFU=';
+const LINE_ACCESS_TOKEN = 'O4z72PDZCC9kwGfLYAqk2Op4mz2mSnCN14aNC01Y2grDjaBsPssLwmKux/fK4h9ydm8tlOdSQCyG/FLVTrBnWWVFDMR6xwNl2w9a9CeQItqBKh6s0vHwo2DsDAbA6MWljGK2ZLvYnI5W03qcrWJT9QdB04t89/1O/w1cDnyilFU=';
 
 app.use(bodyParser.json());
 
