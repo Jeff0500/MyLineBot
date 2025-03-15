@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const csvParser = require("csv-parser");
+const stream = require("stream");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,25 +11,33 @@ const CSV_URL = "http://www3.cpc.com.tw/opendata_d00/webservice/中油主要產�
 app.use(express.json());
 
 // 測試首頁
+app.get("/", (req, res) => {
+    res.send("✅ MomsLineBot 伺服器運行中！");
+});
+
+// 測試 API 是否能下載 CSV
 app.get("/fetch-oil-prices", async (req, res) => {
     try {
         console.log("🔄 正在下載油價 CSV...");
-        const response = await axios.get(CSV_URL);
-        res.send(response.data);
+        const response = await axios.get(CSV_URL, {
+            responseType: "text",
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            }
+        });
+
+        console.log("✅ CSV 下載成功！");
+        res.send(response.data); // 回傳 CSV 原始內容
     } catch (error) {
         console.error("❌ 下載 CSV 失敗", error.message);
         res.status(500).send("無法下載 CSV");
     }
 });
 
-app.get("/", (req, res) => {
-    res.send("✅ MomsLineBot 伺服器運行中！");
-});
-
 // 下載並解析 CSV
 async function fetchOilPrices() {
     try {
-        console.log("🔄 正在下載油價 CSV...");
+        console.log("🔄 正在下載並解析油價 CSV...");
         const response = await axios.get(CSV_URL, {
             responseType: "stream",
             headers: {
@@ -39,7 +48,7 @@ async function fetchOilPrices() {
         return new Promise((resolve, reject) => {
             const results = [];
             response.data
-                .pipe(csvParser())
+                .pipe(csvParser({ separator: "," })) // 確保正確解析 CSV
                 .on("data", (data) => {
                     console.log("🔍 解析到的資料：", data); // ✅ Log 確認數據
                     results.push(data);
