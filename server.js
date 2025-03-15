@@ -7,7 +7,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const CSV_URL = "http://www3.cpc.com.tw/opendata_d00/webservice/中油主要產品牌價.csv";
 
-// 根目錄測試
+// 允許 JSON 請求
+app.use(express.json());
+
+// 測試首頁
 app.get("/", (req, res) => {
     res.send("✅ MomsLineBot 伺服器運行中！");
 });
@@ -35,9 +38,9 @@ async function fetchOilPrices() {
     }
 }
 
-// API 端點: 取得油價
-app.get("/oil-price", async (req, res) => {
-    console.log("📢 收到請求：/oil-price");
+// 改成 POST 方法來獲取油價
+app.post("/oil-price", async (req, res) => {
+    console.log("📢 收到 POST 請求：/oil-price");
     const csvData = await fetchOilPrices();
 
     if (!csvData) {
