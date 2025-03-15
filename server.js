@@ -1,13 +1,10 @@
 const express = require("express");
 const axios = require("axios");
-const csvParser = require("csv-parser");
-const stream = require("stream");
-
+const csv = require("csvtojson"); // 改用 csvtojson 來解析 CSV
 const app = express();
 const PORT = process.env.PORT || 3000;
 const CSV_URL = "http://www3.cpc.com.tw/opendata_d00/webservice/中油主要產品牌價.csv";
 
-// 允許 JSON 請求
 app.use(express.json());
 
 // 測試首頁
@@ -26,10 +23,10 @@ app.get("/fetch-oil-prices", async (req, res) => {
             }
         });
 
-        console.log("✅ CSV 下載成功！");
+        console.log("✅ CSV 下載成功！資料長度:", response.data.length);
         res.send(response.data); // 回傳 CSV 原始內容
     } catch (error) {
-        console.error("❌ 下載 CSV 失敗", error.message);
+        console.error("❌ 下載 CSV 失敗:", error.message);
         res.status(500).send("無法下載 CSV");
     }
 });
@@ -39,31 +36,18 @@ async function fetchOilPrices() {
     try {
         console.log("🔄 正在下載並解析油價 CSV...");
         const response = await axios.get(CSV_URL, {
-            responseType: "stream",
+            responseType: "text",
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
             }
         });
 
-        return new Promise((resolve, reject) => {
-            const results = [];
-            response.data
-                .pipe(csvParser({ separator: "," })) // 確保正確解析 CSV
-                .on("data", (data) => {
-                    console.log("🔍 解析到的資料：", data); // ✅ Log 確認數據
-                    results.push(data);
-                })
-                .on("end", () => {
-                    console.log("✅ CSV 下載並解析完成，共取得", results.length, "筆資料");
-                    resolve(results);
-                })
-                .on("error", (error) => {
-                    console.error("❌ CSV 解析失敗", error.message);
-                    reject(error);
-                });
-        });
+        console.log("✅ CSV 下載成功，開始解析...");
+        const jsonArray = await csv().fromString(response.data);
+        console.log("✅ 解析完成，共取得", jsonArray.length, "筆資料");
+        return jsonArray;
     } catch (error) {
-        console.error("❌ 下載 CSV 失敗", error.message);
+        console.error("❌ 下載或解析 CSV 失敗:", error.message);
         return null;
     }
 }
@@ -79,7 +63,7 @@ app.post("/oil-price", async (req, res) => {
     }
 
     const oilPrices = { "92無鉛": "❌ 未找到", "95無鉛": "❌ 未找到" };
-    
+
     csvData.forEach((row) => {
         if (row["產品名稱"] && row["參考牌價"]) {
             console.log(`✅ 找到 ${row["產品名稱"]}，價格：${row["參考牌價"]}`);

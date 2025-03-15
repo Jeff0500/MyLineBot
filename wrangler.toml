@@ -1,0 +1,17 @@
+name = "my-line-bot"
+type = "javascript"
+
+account_id = "14ca864c0255643cfd20ed852e159b06"
+workers_dev = true
+route = ""
+zone_id = ""
+
+# 🔹 指定 entry-point (請確保 `index.js` 存在於你的專案目錄)
+main = "index.js"
+
+[build]
+command = "npm install && npm run build"
+watch_dir = "src"
+
+[vars]
+NODE_ENV = "production"
