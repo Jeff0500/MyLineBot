@@ -1,15 +1,19 @@
 const express = require("express");
 const axios = require("axios");
 const csvParser = require("csv-parser");
-const fs = require("fs");
-const path = require("path");
+const stream = require("stream");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const CSV_URL = "http://www3.cpc.com.tw/opendata_d00/webservice/中油主要產品牌價.csv";
 
+// 根目錄測試
+app.get("/", (req, res) => {
+    res.send("✅ MomsLineBot 伺服器運行中！");
+});
+
 // 下載並解析 CSV
-async function fetchAndParseCSV() {
+async function fetchOilPrices() {
     try {
         console.log("🔄 正在下載油價 CSV...");
         const response = await axios.get(CSV_URL, { responseType: "stream" });
@@ -31,20 +35,22 @@ async function fetchAndParseCSV() {
     }
 }
 
-// 提供 API
+// API 端點: 取得油價
 app.get("/oil-price", async (req, res) => {
-    const csvData = await fetchAndParseCSV();
+    console.log("📢 收到請求：/oil-price");
+    const csvData = await fetchOilPrices();
+
     if (!csvData) {
         return res.status(500).json({ error: "無法取得油價數據" });
     }
 
-    // 找到 92、95 無鉛汽油
     const oilPrices = { "92無鉛": "❌ 未找到", "95無鉛": "❌ 未找到" };
     csvData.forEach((row) => {
         if (row["產品名稱"] === "92無鉛汽油") oilPrices["92無鉛"] = row["參考牌價"];
         if (row["產品名稱"] === "95無鉛汽油") oilPrices["95無鉛"] = row["參考牌價"];
     });
 
+    console.log("✅ 油價數據發送成功", oilPrices);
     res.json({
         message: "✅ 最新油價資訊",
         prices: oilPrices,
@@ -53,5 +59,5 @@ app.get("/oil-price", async (req, res) => {
 
 // 啟動伺服器
 app.listen(PORT, () => {
-    console.log(`🚀 伺服器運行中：http://localhost:${PORT}`);
+    console.log(`🚀 伺服器運行中：https://momslinebot.onrender.com`);
 });
