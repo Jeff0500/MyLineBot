@@ -1,17 +1,17 @@
-name = "my-line-bot"
-type = "javascript"
-
+name = "my-oil-price-worker"
 account_id = "14ca864c0255643cfd20ed852e159b06"
 workers_dev = true
-route = ""
-zone_id = ""
 
-# 🔹 指定 entry-point (請確保 `index.js` 存在於你的專案目錄)
-main = "index.js"
+compatibility_date = "2025-03-15"
+compatibility_flags = ["nodejs_compat"]
 
-[build]
-command = "npm install && npm run build"
-watch_dir = "src"
+main = "server.js"  # ✅ 這行很重要！請確保它在這裡
 
-[vars]
-NODE_ENV = "production"
+[triggers]
+crons = ["0 9 * * 1"] # 每週一早上 9 點自動更新油價
+
+# ✅ 啟用 Cloudflare KV
+[[kv_namespaces]]
+binding = "OIL_PRICES"
+id = "502fda0f758e442391dfb534a1a2b0f9"
+
