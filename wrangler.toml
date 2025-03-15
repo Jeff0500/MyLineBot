@@ -1,4 +1,4 @@
-name = "my-oil-price-worker"
+name = "my-line-bot"
 account_id = "14ca864c0255643cfd20ed852e159b06"
 workers_dev = true
 
