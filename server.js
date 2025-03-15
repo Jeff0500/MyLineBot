@@ -10,6 +10,17 @@ const CSV_URL = "http://www3.cpc.com.tw/opendata_d00/webservice/中油主要產�
 app.use(express.json());
 
 // 測試首頁
+app.get("/fetch-oil-prices", async (req, res) => {
+    try {
+        console.log("🔄 正在下載油價 CSV...");
+        const response = await axios.get(CSV_URL);
+        res.send(response.data);
+    } catch (error) {
+        console.error("❌ 下載 CSV 失敗", error.message);
+        res.status(500).send("無法下載 CSV");
+    }
+});
+
 app.get("/", (req, res) => {
     res.send("✅ MomsLineBot 伺服器運行中！");
 });
