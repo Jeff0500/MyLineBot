@@ -86,6 +86,7 @@ async function replyToUser(replyToken, message) {
     }
 }
 
+// 啟動伺服器
 app.listen(PORT, () => {
     console.log(`Webhook 伺服器運行於 http://localhost:${PORT}`);
 });
