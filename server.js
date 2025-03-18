@@ -9,13 +9,14 @@ const PORT = process.env.PORT || 10000;
 app.use(bodyParser.json());
 
 // Google Apps Script Web API URL
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxQLS6m0HzbO9_N9ra6lvtQsQlrTrAvB_XBgsrS1H5aeb9ezOSXO0nsbrutQzILHpgK-A/exec";  // 更新你的 GAS ID
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxQLS6m0HzbO9_N9ra6lvtQsQlrTrAvB_XBgsrS1H5aeb9ezOSXO0nsbrutQzILHpgK-A/exec";  
 
 // 讀取 LINE Bot 的 Token
 const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
 
-// 儲存最近的 replyToken
+// 📌 儲存 `replyToken` 和對應的時間
 let storedReplyToken = null;
+let storedReplyTokenTimestamp = null; 
 
 app.get('/', (req, res) => {
     res.send("Hello, LINE Bot Webhook with GAS!");
@@ -31,14 +32,15 @@ app.post('/webhook', async (req, res) => {
                 const replyToken = event.replyToken;
                 const userMessage = event.message.text.trim();
 
-                // 📌 記錄 replyToken
+                // 📌 記錄 `replyToken` 並存時間
                 storedReplyToken = replyToken;
+                storedReplyTokenTimestamp = Date.now();
                 console.log("🔵 記錄 replyToken:", storedReplyToken);
 
-                // 強制回應，先搶佔訊息
+                // 立即回應使用者，避免 `replyToken` 過期
                 await replyToUser(replyToken, "🐶 小狗 Bot 收到訊息啦！正在處理...");
 
-                // 根據關鍵字決定執行的功能
+                // 📌 根據關鍵字決定執行的功能
                 if (/油價/.test(userMessage)) {
                     await callGASFunction("fetchOilPricesFromCloudflare");
                 } else if (/天氣/.test(userMessage)) {
@@ -61,22 +63,23 @@ app.post('/webhook', async (req, res) => {
 async function callGASFunction(functionName) {
     try {
         const response = await axios.get(GAS_URL, {
-            params: { function: functionName }  // 傳遞 function 名稱到 GAS
+            params: { function: functionName }  
         });
 
         console.log("✅ GAS 回應:", response.data);
         logGASResponse(response.data); // 記錄 GAS 回應
 
-        // 📌 檢查儲存的 replyToken，並回應使用者
-        if (storedReplyToken) {
+        // 📌 確保 `replyToken` 在有效期內
+        const currentTime = Date.now();
+        if (storedReplyToken && (currentTime - storedReplyTokenTimestamp) < 29000) { 
             await replyToUser(storedReplyToken, response.data || "⚠️ GAS 沒有返回數據");
         } else {
-            console.log("⚠️ 沒有可用的 replyToken，無法發送訊息");
+            console.log("⚠️ replyToken 已過期，無法發送訊息");
         }
 
     } catch (error) {
         console.error("🚨 GAS API 錯誤:", error.response ? error.response.data : error);
-        if (storedReplyToken) {
+        if (storedReplyToken && (Date.now() - storedReplyTokenTimestamp) < 29000) {
             await replyToUser(storedReplyToken, "❌ 無法取得 GAS 回應");
         }
     }
