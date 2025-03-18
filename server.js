@@ -49,10 +49,10 @@ app.post('/webhook', async (req, res) => {
 async function callGASFunction(functionName) {
     try {
         const response = await axios.get(GAS_URL, {
-            params: { function: functionName } // 告訴 GAS 要執行哪個函式
+            params: { function: functionName } // 確保這裡的 function 參數傳遞正確
         });
 
-        console.log("GAS 回應:", response.data);
+        console.log("GAS 回應:", response.data); // 這裡會顯示 GAS 的回應，檢查 logs
         return response.data || "GAS 沒有回應";
     } catch (error) {
         console.error("GAS API 錯誤:", error.response ? error.response.data : error);
