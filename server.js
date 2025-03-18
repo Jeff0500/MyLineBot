@@ -26,6 +26,7 @@ app.post('/webhook', async (req, res) => {
         for (let event of req.body.events) {
             if (event.type === 'message' && event.message.type === 'text') {
                 const replyToken = event.replyToken;
+                console.log("Reply Token: ", replyToken);
                 const userMessage = event.message.text.trim();
 
                 // 強制回應，先搶佔訊息
