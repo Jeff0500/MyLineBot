@@ -1,5 +1,5 @@
 // Google Apps Script Web API URL
-const GAS_URL = "https://script.google.com/macros/s/你的GAS_ID/exec";  // 使用你更新的 GAS URL
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxQLS6m0HzbO9_N9ra6lvtQsQlrTrAvB_XBgsrS1H5aeb9ezOSXO0nsbrutQzILHpgK-A/exec";  // 使用你更新的 GAS URL
 
 // 讀取 LINE Bot 的 Token
 const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
