@@ -1,13 +1,3 @@
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(bodyParser.json());
-
 // Google Apps Script Web API URL
 const GAS_URL = "https://script.google.com/macros/s/你的GAS_ID/exec";  // 使用你更新的 GAS URL
 
