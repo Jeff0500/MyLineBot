@@ -85,8 +85,15 @@ async function replyToUser(replyToken, message) {
         console.log("LINE Bot 訊息已發送:", message);
     } catch (error) {
         console.error("發送 LINE 訊息時錯誤:", error.response ? error.response.data : error);
+        
+        // 如果 replyToken 無效，重新調整處理邏輯
+        if (error.response && error.response.data.message === 'Invalid reply token') {
+            console.log("無效的 replyToken，再次嘗試");
+            // 這裡可以加入重試機制，或者回應給 LINE 用戶
+        }
     }
 }
+
 
 // 啟動伺服器
 app.listen(PORT, () => {
