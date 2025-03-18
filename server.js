@@ -38,7 +38,6 @@ app.post('/webhook', async (req, res) => {
                 console.log("🔵 記錄 replyToken:", storedReplyToken);
 
                 // 立即回應使用者，避免 `replyToken` 過期
-                await replyToUser(replyToken, "🐶 小狗 Bot 收到訊息啦！正在處理...");
 
                 // 📌 根據關鍵字決定執行的功能
                 if (/油價/.test(userMessage)) {
