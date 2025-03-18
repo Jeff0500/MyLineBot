@@ -8,18 +8,16 @@ const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-// Google Apps Script Web API URL（這裡的 URL 要改成你的 GAS 網址）
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyGlOI0MIh7zjLM23e7_DXYepYvFSqS7skIlPlIJN8N4XbikPe8newclJnN7OgO_gQIBQ/exec";
+// Google Apps Script Web API URL
+const GAS_URL = "https://script.google.com/macros/s/你的GAS_ID/exec";  // 使用你更新的 GAS URL
 
 // 讀取 LINE Bot 的 Token
 const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
 
-// 測試用 GET（可瀏覽器測試）
 app.get('/', (req, res) => {
     res.send("Hello, LINE Bot Webhook with GAS!");
 });
 
-// 接收 LINE Webhook
 app.post('/webhook', async (req, res) => {
     console.log("收到 LINE Webhook:", JSON.stringify(req.body, null, 2));
 
@@ -27,16 +25,20 @@ app.post('/webhook', async (req, res) => {
         for (let event of req.body.events) {
             if (event.type === 'message' && event.message.type === 'text') {
                 const replyToken = event.replyToken;
-                const userMessage = event.message.text;
-                
-                // 如果使用者輸入「油價」，呼叫 GAS API 執行 sendAirQualityUpdate()
-                if (userMessage.includes("油價")) {
-                    const gasResponse = await callGASFunction("sendAirQualityUpdate");
+                const userMessage = event.message.text.trim();
 
-                    // 回覆使用者 GAS 回應的內容
-                    await replyToUser(replyToken, gasResponse);
+                // 強制回應，先搶佔訊息
+                replyToUser(replyToken, "🐶 小狗 Bot 收到訊息啦！正在處理...");
+
+                // 根據關鍵字決定執行的功能
+                if (/油價/.test(userMessage)) {
+                    await callGASFunction("fetchOilPricesFromCloudflare", replyToken);
+                } else if (/天氣/.test(userMessage)) {
+                    await callGASFunction("sendWeatherUpdate", replyToken);
+                } else if (/音樂|排行榜/.test(userMessage)) {
+                    await callGASFunction("sendKKBOXChartsToLine", replyToken);
                 } else {
-                    await replyToUser(replyToken, `你說了：「${userMessage}」，但我不懂 😅`);
+                    await replyToUser(replyToken, "🤖 我聽不懂，可以試試「油價」、「天氣」或「音樂」！");
                 }
             }
         }
@@ -45,18 +47,18 @@ app.post('/webhook', async (req, res) => {
     res.sendStatus(200);
 });
 
-// 呼叫 Google Apps Script API，執行指定函式
-async function callGASFunction(functionName) {
+// 呼叫 Google Apps Script API
+async function callGASFunction(functionName, replyToken) {
     try {
         const response = await axios.get(GAS_URL, {
-            params: { function: functionName } // 確保這裡的 function 參數傳遞正確
+            params: { function: functionName }  // 傳遞 function 名稱到 GAS
         });
 
-        console.log("GAS 回應:", response.data); // 這裡會顯示 GAS 的回應，檢查 logs
-        return response.data || "GAS 沒有回應";
+        console.log("GAS 回應:", response.data);
+        await replyToUser(replyToken, response.data || "GAS 沒有回應");
     } catch (error) {
         console.error("GAS API 錯誤:", error.response ? error.response.data : error);
-        return "無法取得 GAS 回應";
+        await replyToUser(replyToken, "無法取得 GAS 回應");
     }
 }
 
@@ -81,7 +83,6 @@ async function replyToUser(replyToken, message) {
     }
 }
 
-// 啟動伺服器
 app.listen(PORT, () => {
     console.log(`Webhook 伺服器運行於 http://localhost:${PORT}`);
 });
