@@ -8,8 +8,11 @@ const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-// Google Apps Script Web API URL
+// Google Apps Script Web API URL（這裡的 URL 要改成你的 GAS 網址）
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyVEhVIADPYWQumW3VudLoCuEGpyhG-2DjT7gbFl9V_affxowNjDY73oEiUe7Oo3iDEIA/exec";
+
+// 讀取 LINE Bot 的 Token
+const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
 
 // 測試用 GET（可瀏覽器測試）
 app.get('/', (req, res) => {
@@ -26,11 +29,15 @@ app.post('/webhook', async (req, res) => {
                 const replyToken = event.replyToken;
                 const userMessage = event.message.text;
                 
-                // 轉發訊息給 Google Apps Script
-                const gasResponse = await sendToGAS(userMessage);
+                // 如果使用者輸入「油價」，呼叫 GAS API 執行 sendAirQualityUpdate()
+                if (userMessage.includes("油價")) {
+                    const gasResponse = await callGASFunction("sendAirQualityUpdate");
 
-                // 回覆使用者 Google Apps Script 的回應
-                await replyToUser(replyToken, gasResponse);
+                    // 回覆使用者 GAS 回應的內容
+                    await replyToUser(replyToken, gasResponse);
+                } else {
+                    await replyToUser(replyToken, `你說了：「${userMessage}」，但我不懂 😅`);
+                }
             }
         }
     }
@@ -38,11 +45,11 @@ app.post('/webhook', async (req, res) => {
     res.sendStatus(200);
 });
 
-// 發送訊息到 Google Apps Script
-async function sendToGAS(message) {
+// 呼叫 Google Apps Script API，執行指定函式
+async function callGASFunction(functionName) {
     try {
         const response = await axios.get(GAS_URL, {
-            params: { text: message } // 傳遞使用者訊息到 GAS
+            params: { function: functionName } // 告訴 GAS 要執行哪個函式
         });
 
         console.log("GAS 回應:", response.data);
@@ -56,7 +63,6 @@ async function sendToGAS(message) {
 // 回應 LINE Bot 使用者
 async function replyToUser(replyToken, message) {
     const LINE_API_URL = 'https://api.line.me/v2/bot/message/reply';
-    const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN; // 你的 LINE Token
 
     try {
         await axios.post(LINE_API_URL, {
