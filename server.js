@@ -1,5 +1,15 @@
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const axios = require('axios');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(bodyParser.json());
+
 // Google Apps Script Web API URL
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxQLS6m0HzbO9_N9ra6lvtQsQlrTrAvB_XBgsrS1H5aeb9ezOSXO0nsbrutQzILHpgK-A/exec";  // 使用你更新的 GAS URL
+const GAS_URL = "https://script.google.com/macros/s/你的GAS_ID/exec";  // 使用你更新的 GAS URL
 
 // 讀取 LINE Bot 的 Token
 const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
@@ -8,6 +18,7 @@ app.get('/', (req, res) => {
     res.send("Hello, LINE Bot Webhook with GAS!");
 });
 
+// 接收 LINE Webhook 訊息
 app.post('/webhook', async (req, res) => {
     console.log("收到 LINE Webhook:", JSON.stringify(req.body, null, 2));
 
@@ -18,7 +29,7 @@ app.post('/webhook', async (req, res) => {
                 const userMessage = event.message.text.trim();
 
                 // 強制回應，先搶佔訊息
-                replyToUser(replyToken, "🐶 小狗 Bot 收到訊息啦！正在處理...");
+                await replyToUser(replyToken, "🐶 小狗 Bot 收到訊息啦！正在處理...");
 
                 // 根據關鍵字決定執行的功能
                 if (/油價/.test(userMessage)) {
@@ -27,6 +38,8 @@ app.post('/webhook', async (req, res) => {
                     await callGASFunction("sendWeatherUpdate", replyToken);
                 } else if (/音樂|排行榜/.test(userMessage)) {
                     await callGASFunction("sendKKBOXChartsToLine", replyToken);
+                } else if (/台語排行榜/.test(userMessage)) {
+                    await callGASFunction("sendKKBOXTaiwaneseHotChartsToLine", replyToken);
                 } else {
                     await replyToUser(replyToken, "🤖 我聽不懂，可以試試「油價」、「天氣」或「音樂」！");
                 }
