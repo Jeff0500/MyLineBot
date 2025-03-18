@@ -9,8 +9,7 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 // Google Apps Script Web API URL（這裡的 URL 要改成你的 GAS 網址）
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyVEhVIADPYWQumW3VudLoCuEGpyhG-2DjT7gbFl9V_affxowNjDY73oEiUe7Oo3iDEIA/exec";
-
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyGlOI0MIh7zjLM23e7_DXYepYvFSqS7skIlPlIJN8N4XbikPe8newclJnN7OgO_gQIBQ/exec";
 
 // 讀取 LINE Bot 的 Token
 const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
