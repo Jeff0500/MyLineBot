@@ -26,9 +26,9 @@ app.post('/webhook', async (req, res) => {
         for (let event of req.body.events) {
             if (event.type === 'message' && event.message.type === 'text') {
                 const replyToken = event.replyToken;
-                console.log("Reply Token: ", replyToken);
-                const userMessage = event.message.text.trim();
+                console.log("Reply Token:", replyToken);  // 確認 replyToken
 
+                const userMessage = event.message.text.trim();
                 // 強制回應，先搶佔訊息
                 await replyToUser(replyToken, "🐶 小狗 Bot 收到訊息啦！正在處理...");
 
@@ -50,6 +50,7 @@ app.post('/webhook', async (req, res) => {
 
     res.sendStatus(200);
 });
+
 
 // 呼叫 Google Apps Script API
 async function callGASFunction(functionName, replyToken) {
