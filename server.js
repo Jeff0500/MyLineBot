@@ -1,71 +1,81 @@
-export default {
-    async fetch(request, env) {
-        const url = new URL(request.url);
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const axios = require('axios');
 
-        // 🔹 手動更新油價
-        if (url.pathname === "/trigger-update") {
-            console.log("📢 手動觸發油價更新！");
-            await updateOilPrices(env);
-            return new Response("✅ 油價更新完成！", { status: 200 });
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(bodyParser.json());
+
+// Google Apps Script Web API URL
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyVEhVIADPYWQumW3VudLoCuEGpyhG-2DjT7gbFl9V_affxowNjDY73oEiUe7Oo3iDEIA/exec";
+
+// 測試用 GET（可瀏覽器測試）
+app.get('/', (req, res) => {
+    res.send("Hello, LINE Bot Webhook with GAS!");
+});
+
+// 接收 LINE Webhook
+app.post('/webhook', async (req, res) => {
+    console.log("收到 LINE Webhook:", JSON.stringify(req.body, null, 2));
+
+    if (req.body.events) {
+        for (let event of req.body.events) {
+            if (event.type === 'message' && event.message.type === 'text') {
+                const replyToken = event.replyToken;
+                const userMessage = event.message.text;
+                
+                // 轉發訊息給 Google Apps Script
+                const gasResponse = await sendToGAS(userMessage);
+
+                // 回覆使用者 Google Apps Script 的回應
+                await replyToUser(replyToken, gasResponse);
+            }
         }
-
-        // 🔹 提供最新油價
-        if (url.pathname === "/oil-price") {
-            const oilPrices = await getLatestOilPrices(env);
-            return new Response(JSON.stringify({
-                message: "✅ 最新油價資訊",
-                prices: oilPrices,
-            }), { headers: { "Content-Type": "application/json" } });
-        }
-
-        return new Response("❌ 無效的 API 路徑", { status: 404 });
     }
-};
 
-// ✅ **更新油價並存入 KV**
-async function updateOilPrices(env) {
+    res.sendStatus(200);
+});
+
+// 發送訊息到 Google Apps Script
+async function sendToGAS(message) {
     try {
-        console.log("🔄 正在更新油價 CSV...");
-        const response = await fetch("http://www3.cpc.com.tw/opendata_d00/webservice/中油主要產品牌價.csv");
-        const csvText = await response.text();
-        
-        const oilPrices = csvToJson(csvText);
-        const filteredPrices = {
-            "92無鉛": getPrice(oilPrices, "92無鉛汽油"),
-            "95無鉛": getPrice(oilPrices, "95無鉛汽油"),
-        };
-        
-        await env.OIL_PRICES.put("latest", JSON.stringify(filteredPrices)); // 存入 KV
-        console.log("✅ 油價已更新！", filteredPrices);
+        const response = await axios.get(GAS_URL, {
+            params: { text: message } // 傳遞使用者訊息到 GAS
+        });
+
+        console.log("GAS 回應:", response.data);
+        return response.data || "GAS 沒有回應";
     } catch (error) {
-        console.error("❌ 更新油價失敗：", error);
+        console.error("GAS API 錯誤:", error.response ? error.response.data : error);
+        return "無法取得 GAS 回應";
     }
 }
 
-// ✅ **從 KV 取得最新油價**
-async function getLatestOilPrices(env) {
-    const storedData = await env.OIL_PRICES.get("latest");
-    if (!storedData) {
-        console.log("⚠️ 沒有最新的油價數據，重新抓取...");
-        await updateOilPrices(env);
+// 回應 LINE Bot 使用者
+async function replyToUser(replyToken, message) {
+    const LINE_API_URL = 'https://api.line.me/v2/bot/message/reply';
+    const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN; // 你的 LINE Token
+
+    try {
+        await axios.post(LINE_API_URL, {
+            replyToken: replyToken,
+            messages: [{ type: 'text', text: message }]
+        }, {
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${LINE_ACCESS_TOKEN}`
+            }
+        });
+
+        console.log("LINE Bot 訊息已發送:", message);
+    } catch (error) {
+        console.error("發送 LINE 訊息時錯誤:", error.response ? error.response.data : error);
     }
-    return storedData ? JSON.parse(storedData) : { "92無鉛": "❌ 未找到", "95無鉛": "❌ 未找到" };
 }
 
-// ✅ **解析 CSV 成 JSON**
-function csvToJson(csvText) {
-    const rows = csvText.split("\n").map(row => row.split(","));
-    const headers = rows[0];
-    return rows.slice(1).map(row => Object.fromEntries(row.map((cell, i) => [headers[i], cell])));
-}
-
-// ✅ **從資料中找出油價**
-function getPrice(data, productName) {
-    const product = data.find(row => row["產品名稱"] === productName);
-    return product ? product["參考牌價"] : "❌ 未找到";
-}
-
-// 🔥 **定時自動更新油價**（每週一 9:00 AM）
-addEventListener("scheduled", (event, env) => {
-    event.waitUntil(updateOilPrices(env));
+// 啟動伺服器
+app.listen(PORT, () => {
+    console.log(`Webhook 伺服器運行於 http://localhost:${PORT}`);
 });
