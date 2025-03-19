@@ -63,6 +63,7 @@ app.post('/webhook', async (req, res) => {
 
 //  呼叫 Google Apps Script API
 async function callGASFunction(functionName) {
+    console.log("呼叫 GAS 函式，傳遞的 functionName：" + functionName);
     console.log("呼叫 GAS 函式:", functionName); // 新增日誌
 
     try {
