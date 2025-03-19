@@ -62,33 +62,36 @@ app.post('/webhook', async (req, res) => {
 });
 
 //  呼叫 Google Apps Script API
+// 📌 呼叫 Google Apps Script API
 async function callGASFunction(functionName) {
-    console.log("呼叫 GAS 函式，傳遞的 functionName：" + functionName);
-    console.log("呼叫 GAS 函式:", functionName); // 新增日誌
-
     try {
         const response = await axios.get(GAS_URL, {
-            params: { function: functionName }
+            params: { function: functionName }  
         });
 
         console.log("✅ GAS 回應:", response.data);
         logGASResponse(response.data); // 記錄 GAS 回應
 
-        //  確保 `replyToken` 在有效期內
+        // 📌 確保 `replyToken` 在有效期內
         const currentTime = Date.now();
-        if (storedReplyToken && (currentTime - storedReplyTokenTimestamp) < 29000) {
-            await replyToUser(storedReplyToken, response.data || "⚠️ GAS 沒有返回數據");
+        if (storedReplyToken && (currentTime - storedReplyTokenTimestamp) < 29000) { 
+            if (response.data && response.data.trim() !== "") { // **只有當 GAS 回應有數據時才發送**
+                await replyToUser(storedReplyToken, response.data);
+            } else {
+                console.log("⚠️ GAS 沒有返回有效數據，不發送訊息");
+            }
         } else {
             console.log("⚠️ replyToken 已過期，無法發送訊息");
         }
 
     } catch (error) {
-        console.error(" GAS API 錯誤:", error.response ? error.response.data : error);
+        console.error("🚨 GAS API 錯誤:", error.response ? error.response.data : error);
         if (storedReplyToken && (Date.now() - storedReplyTokenTimestamp) < 29000) {
             await replyToUser(storedReplyToken, "❌ 無法取得 GAS 回應");
         }
     }
 }
+
 
 //  記錄 GAS 返回的數據
 function logGASResponse(data) {
