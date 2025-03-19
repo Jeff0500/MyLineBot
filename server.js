@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 10000;
 app.use(bodyParser.json());
 
 // Google Apps Script Web API URL
-const GAS_URL = "https://script.google.com/macros/s/AKfycbznZzz-34gOv6z1uYVjFzQoCvC9RgTn-BQFm-AwV6G0KWZ5_VlYYuybBqhX9GW7V612Uw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyfhBBO4tmh6DFEI57yUeSIFXzc9ObvhZutMBJor8iOFI8Jm86gwvtiJRzmO140wh2Iow/exec";
 
 // 讀取 LINE Bot 的 Token
 const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
