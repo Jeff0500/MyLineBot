@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 10000;
 app.use(bodyParser.json());
 
 // Google Apps Script Web API URL
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxa2dC9jrmjbsEim1DpFOh1Oc7i3hYN4AzNzOtZDVSmn8rNn5BvjEKO4ykYsWCFV6NUvg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx6fuwFP_T5oHgrHWec0FSmFaOl28vDyI_HwtEzI-8N4pTCBiYu8mIAa3MBgp-FMM5a4w/exec";
 
 // 讀取 LINE Bot 的 Token
 const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
@@ -31,7 +31,10 @@ app.post('/webhook', async (req, res) => {
             if (event.type === 'message' && event.message.type === 'text') {
                 const replyToken = event.replyToken;
                 const userMessage = event.message.text.trim();
+                const userId = event.source.userId;  // 取得使用者的 ID
 
+                // 🔹 記錄 User ID
+                console.log("🔍 觸發機器人的 User ID:", userId);
                 //  記錄 `replyToken` 並存時間
                 storedReplyToken = replyToken;
                 storedReplyTokenTimestamp = Date.now();
