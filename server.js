@@ -52,7 +52,29 @@ app.post('/webhook', async (req, res) => {
                 } else if (/空氣品質/.test(userMessage)) { // 新增關鍵字匹配
                     await callGASFunction("sendAirQualityUpdate");
                 } else {
-                    await replyToUser(replyToken, " 我聽不懂，可以試試「油價」、「天氣」或「音樂」！");
+                    // 🐱 隨機選擇更生動的貓咪表情
+const catEmojis = ["😻", "🐾", "😸", "🐱💖", "🐈✨", "🐾💬"];
+const randomCat = catEmojis[Math.floor(Math.random() * catEmojis.length)];
+
+const message = `${randomCat} 喵醬幫你查油價！🚗💨💨
+
+🛢️ *查詢油價*：
+輸入 **油價、今日油價**，喵醬立刻為您查詢！💨
+
+🌦️ *今天的天氣如何呢？*
+輸入 **天氣、今日天氣、氣象、天氣如何**，喵醬來報告最新氣象！☀️🌧️
+
+🎵 *不知道要聽什麼嗎？*
+喵醬告訴你今天 KKBOX 前 10 名的音樂！🎶💃  
+輸入 **音樂、排行榜、KKBOX 排行榜** 來看看！
+
+🎤 *台語音樂看這邊！*
+想聽台語歌嗎？輸入 **台語排行榜、台語音樂**，馬上播放熱騰騰的台語音樂榜！🎶🥁
+
+✨ 喵醬等待您的指示，喵！ฅ^•ﻌ•^ฅ`;
+
+await replyToUser(replyToken, message);
+
                 }
             }
         }
