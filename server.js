@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 10000;
 app.use(bodyParser.json());
 
 // Google Apps Script Web API URL
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwSqpl2qJqZn4pYZTR-0drQYZE825koqJJ3XoJHmh28FKm9ljlCl0IlRMX2fVG4rVQ86A/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzVXYPLNwzXjwczXctgUxTQc7NSlrRkkgYU-8duTPomFv5KG2tL8Bev2Ca5sDBtBthqkw/exec";
 
 // 讀取 LINE Bot 的 Token
 const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
@@ -58,20 +58,20 @@ const randomCat = catEmojis[Math.floor(Math.random() * catEmojis.length)];
 
 const message = `${randomCat} 喵醬幫你查油價！🚗💨💨
 
-🛢️ *查詢油價*：
-輸入 **油價、今日油價**，喵醬立刻為您查詢！💨
+🛢️查詢油價：
+輸入油價、今日油價，喵醬立刻為您查詢！💨
 
-🌦️ *今天的天氣如何呢？*
-輸入 **天氣、今日天氣、氣象、天氣如何**，喵醬來報告最新氣象！☀️🌧️
+🌦️今天的天氣如何呢？
+輸入天氣、今日天氣、氣象、天氣如何，喵醬來報告最新氣象！☀️🌧️
 
-🎵 *不知道要聽什麼嗎？*
+🎵不知道要聽什麼嗎？
 喵醬告訴你今天 KKBOX 前 10 名的音樂！🎶💃  
-輸入 **音樂、排行榜、KKBOX 排行榜** 來看看！
+輸入音樂、排行榜、KKBOX 排行榜來看看！
 
-🎤 *台語音樂看這邊！*
-想聽台語歌嗎？輸入 **台語排行榜、台語音樂**，馬上播放熱騰騰的台語音樂榜！🎶🥁
+🎤台語音樂看這邊！
+想聽台語歌嗎？輸入台語排行榜、台語音樂，馬上播放熱騰騰的台語音樂榜！🎶🥁
 
-✨ 喵醬等待您的指示，喵！ฅ^•ﻌ•^ฅ`;
+✨喵醬等待您的指示，喵！ฅ^•ﻌ•^ฅ`;
 
 await replyToUser(replyToken, message);
 
